@@ -8,7 +8,7 @@ let program:WebGLProgram;
 let bufferId:WebGLBuffer;
 
 let targets:vec4[][]; // array to store targets in
-let trisPerTarget:number = 4;
+let trisPerTarget:number = 20;
 
 window.onload = function init() :void {
     canvas = document.getElementById("gl-canvas") as HTMLCanvasElement;
@@ -24,10 +24,10 @@ window.onload = function init() :void {
 
     // Set up targets
     targets = [];
-    makeTarget(0,0.5,0.5,0.2);
-    makeTarget(1,-0.5,0.5,0.2);
-    makeTarget(2,-0.5,-0.5,0.2);
-    makeTarget(3,0.5,-0.5,0.2);
+    makeTarget(0,0.5,0.5,0.1);
+    makeTarget(1,-0.5,0.5,0.1);
+    makeTarget(2,-0.5,-0.5,0.1);
+    makeTarget(3,0.5,-0.5,0.1);
 
     // Buffer target data
     bufferTargets();
@@ -44,31 +44,18 @@ window.onload = function init() :void {
 
 function makeTarget(id:number, x:number, y:number, size:number) :void {
     targets[id] = [];
-    // for(let i = 0; i < trisPerTarget; i++){
-    //     let xa = size * Math.cos(Math.PI * i * trisPerTarget/ 2);
-    //     let ya = size * Math.sin(Math.PI * i * trisPerTarget/ 2);
-    //     let xb = size * Math.cos(Math.PI * (i + 1) * trisPerTarget/ 2);
-    //     let yb = size * Math.sin(Math.PI * (i + 1) * trisPerTarget/ 2);
-    //     targets[id].push(new vec4(x + xa, y + ya, 0, 1));
-    //     targets[id].push(new vec4(x + xb, y + yb, 0, 1));
-    //     targets[id].push(new vec4(x, y, 0, 1));
-    // }
-
-    targets[id].push(new vec4(x + size, y, 0, 1));
-    targets[id].push(new vec4(x, y + size, 0, 1));
-    targets[id].push(new vec4(x, y, 0, 1));
-
-    targets[id].push(new vec4(x , y- size, 0, 1));
-    targets[id].push(new vec4(x- size, y, 0, 1));
-    targets[id].push(new vec4(x, y, 0, 1));
-
-    targets[id].push(new vec4(x , y+size, 0, 1));
-    targets[id].push(new vec4(x- size, y, 0, 1));
-    targets[id].push(new vec4(x, y, 0, 1));
-
-    targets[id].push(new vec4(x + size, y, 0, 1));
-    targets[id].push(new vec4(x, y - size, 0, 1));
-    targets[id].push(new vec4(x, y, 0, 1));
+    for(let i = 0; i < trisPerTarget; i++){
+        // First unit circle coordinate
+        let xa = size * Math.cos(Math.PI * i / (trisPerTarget / 2) );
+        let ya = size * Math.sin(Math.PI * i / (trisPerTarget / 2) );
+        // Second unit circle coordinate
+        let xb = size * Math.cos(Math.PI * (i + 1) / (trisPerTarget / 2));
+        let yb = size * Math.sin(Math.PI * (i + 1) / (trisPerTarget / 2) );
+        // Add the points, adjusted to the specified center
+        targets[id].push(new vec4(x + xa, y + ya, 0, 1));
+        targets[id].push(new vec4(x + xb, y + yb, 0, 1));
+        targets[id].push(new vec4(x, y, 0, 1));
+    }
 }
 
 function bufferTargets(){
