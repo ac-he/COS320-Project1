@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Target Practice</title>
 
+    <link rel="stylesheet" href="targetpractice.css">
+
     <script id = "vertex-shader" type="x-shader/x-vertex">#version 300 es
         in vec4 vPosition;
         void main(){
@@ -16,7 +18,7 @@
         out vec4 fragColor;
 
         void main() {
-            fragColor = vec4(0.9, 0.5, 0.2, 1);
+            fragColor = vec4(0.79, 0.71, 0.55, 1);
         }
     </script>
 
@@ -24,9 +26,15 @@
 </head>
 <body>
     <h1>Target Practice Game</h1>
-    <p>Project 1</p>
+    <hr>
+    <div id="feedback">
+        Click to shoot at the targets. Press the "M" key to toggle target movement.
+    </div>
+    <hr>
     <canvas id = "gl-canvas" width="512" height="512">
         HTML canvas not supported.
     </canvas>
+    <hr>
+    <button id="reset">Reset Game</button>
 </body>
 </html>

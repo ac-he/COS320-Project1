@@ -3,9 +3,13 @@ import {initShaders, vec4, flatten} from "./helperfunctions.js";
 "use strict";
 // some webgl objects
 let gl:WebGLRenderingContext;
-let canvas:HTMLCanvasElement;
 let program:WebGLProgram;
 let bufferId:WebGLBuffer;
+
+// html elements
+let canvas:HTMLCanvasElement;
+let button:HTMLButtonElement;
+let feedback:HTMLDivElement;
 
 interface target {
     active: boolean;
@@ -25,6 +29,12 @@ window.onload = function init() :void {
     if(!gl) {
         alert("WebGL 2 isn't available");
     }
+
+    // Get the other HTML elements
+    button = document.getElementById("reset") as HTMLButtonElement;
+    button.addEventListener("click", buttonPressListener);
+
+    feedback = document.getElementById("feedback") as HTMLDivElement;
 
     // Configure mouse cursor to be a crosshair
     canvas.style.cursor = "crosshair";
@@ -62,12 +72,21 @@ function clickListener(event:MouseEvent){
     let clickY = 2 * flippedY / canvas.clientHeight - 1;
     let clickX = 2 * (event.clientX - rect.left) / canvas.clientWidth - 1;
 
+    // Check if this click was inside of any of the targets
     targets.forEach((t:target) => {
         if(t.active){
+            // The targets are circular, so we can calculate the distance of the click from the center of the target
             let distance = Math.sqrt((clickX - t.x) ** 2 + (clickY - t.y) ** 2);
+            // and compare that distance with the target's size
             if(distance <= t.size){
+                // deactivate (hide) the target
                 t.active = false;
+                // decrement target counter
                 targetsRemaining--;
+                feedback.innerText = targetsRemaining + " targets remaining."
+                if(targetsRemaining == 0){
+                    feedback.innerText += " Press the button below to reset the game."
+                }
             }
         }
     })
@@ -80,6 +99,14 @@ function keyPressListener(event:KeyboardEvent){
     if(event.key == "m"){
         // TODO after animation lecture
     }
+}
+
+function buttonPressListener(){
+    initTargets();
+    targetsRemaining = targets.length;
+    feedback.innerText = targetsRemaining + " targets remaining."
+    makeAndBufferTargets();
+    requestAnimationFrame(render);
 }
 
 function makeAndBufferTargets(){
@@ -104,7 +131,6 @@ function makeAndBufferTargets(){
             }
         }
     })
-
     gl.bufferData(gl.ARRAY_BUFFER, flatten(allTargets), gl.STATIC_DRAW);
 
     let vPosition:GLint = gl.getAttribLocation(program, "vPosition");
@@ -128,30 +154,13 @@ function render() : void {
 }
 
 function initTargets(): void{
-    targets = [
-        {
+    targets = []
+    for(let i = 0; i < 6; i++){
+        targets.push({
             active: true,
-            x: 0.5,
-            y: 0.5,
+            x: Math.random()*1.8 - 0.9,
+            y: Math.random()*1.8 - 0.9,
             size: 0.1
-        },
-        {
-            active: true,
-            x: 0.5,
-            y: -0.5,
-            size: 0.1
-        },
-        {
-            active: true,
-            x: -0.5,
-            y: -0.5,
-            size: 0.1
-        },
-        {
-            active: true,
-            x: -0.5,
-            y: 0.5,
-            size: 0.1
-        },
-    ]
+        });
+    }
 }

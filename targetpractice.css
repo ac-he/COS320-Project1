@@ -1,0 +1,19 @@
+body {
+    background-color: #362513;
+    font-family: "Baskerville Old Face", serif;
+    color: antiquewhite;
+    text-align: center;
+    font-size: 1em;
+}
+
+h1 {
+    text-shadow: 3px 0px grey;
+    font-size: 2em;
+}
+
+button {
+    background-color: antiquewhite;
+    color: #362513;
+    font-family: "Baskerville Old Face", serif;
+    font-size: 1em;
+}
