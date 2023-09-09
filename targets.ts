@@ -12,15 +12,15 @@ let button:HTMLButtonElement;
 let feedback:HTMLDivElement;
 
 interface target {
-    active: boolean;
-    x:number;
-    y:number;
-    size:number;
+    active: boolean; // active targets will be visible and have animation, inactive ones won't
+    x:number; // x position of the center of the target
+    y:number; // y position of the center of the target
+    size:number; // the radius of the target
 }
-let trisPerTarget:number = 20;
-let targets:target[];
 
-let targetsRemaining:number;
+let trisPerTarget:number = 20; // how many triangles are used to render this circle?
+let targets:target[]; // stores all targets
+let targetsRemaining:number; // number of active targets
 
 window.onload = function init() :void {
     // Get the canvas element
@@ -29,15 +29,14 @@ window.onload = function init() :void {
     if(!gl) {
         alert("WebGL 2 isn't available");
     }
+    // Configure mouse cursor to be a crosshair
+    canvas.style.cursor = "crosshair";
 
     // Get the other HTML elements
     button = document.getElementById("reset") as HTMLButtonElement;
     button.addEventListener("click", buttonPressListener);
 
     feedback = document.getElementById("feedback") as HTMLDivElement;
-
-    // Configure mouse cursor to be a crosshair
-    canvas.style.cursor = "crosshair";
 
     // Compile the shaders
     program = initShaders(gl, "vertex-shader", "fragment-shader");
@@ -72,7 +71,7 @@ function clickListener(event:MouseEvent){
     let clickY = 2 * flippedY / canvas.clientHeight - 1;
     let clickX = 2 * (event.clientX - rect.left) / canvas.clientWidth - 1;
 
-    // Check if this click was inside of any of the targets
+    // Check if this click was inside any of the targets
     targets.forEach((t:target) => {
         if(t.active){
             // The targets are circular, so we can calculate the distance of the click from the center of the target
@@ -91,29 +90,36 @@ function clickListener(event:MouseEvent){
         }
     })
 
+    // draw updated targets
     makeAndBufferTargets();
     requestAnimationFrame(render);
 }
 
 function keyPressListener(event:KeyboardEvent){
-    if(event.key == "m"){
+    if(event.key == "m"){ // m is used to toggle movement
         // TODO after animation lecture
     }
 }
 
 function buttonPressListener(){
+    // reset the targets
     initTargets();
+
+    // fix the target counter
     targetsRemaining = targets.length;
     feedback.innerText = targetsRemaining + " targets remaining."
+
+    // draw updated targets
     makeAndBufferTargets();
     requestAnimationFrame(render);
 }
 
 function makeAndBufferTargets(){
+    // buffer setup
     bufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
 
-    // Send over the data
+    // create the target shapes
     let allTargets:vec4[] = [];
     targets.forEach((t:target) => {
         if(t.active){
@@ -131,10 +137,10 @@ function makeAndBufferTargets(){
             }
         }
     })
+
+    // add the shape data to the buffer
     gl.bufferData(gl.ARRAY_BUFFER, flatten(allTargets), gl.STATIC_DRAW);
-
     let vPosition:GLint = gl.getAttribLocation(program, "vPosition");
-
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
 }
@@ -154,7 +160,10 @@ function render() : void {
 }
 
 function initTargets(): void{
+    // initialize/clear out the array of targets
     targets = []
+
+    // Draw 6 targets
     for(let i = 0; i < 6; i++){
         targets.push({
             active: true,
