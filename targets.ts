@@ -16,11 +16,18 @@ interface target {
     x:number; // x position of the center of the target
     y:number; // y position of the center of the target
     size:number; // the radius of the target
+    xDirection:number; // direction/speed in x-axis
+    yDirection:number; // direction/speed in y-axis
 }
 
 let trisPerTarget:number = 20; // how many triangles are used to render this circle?
 let targets:target[]; // stores all targets
 let targetsRemaining:number; // number of active targets
+
+let moving:boolean;
+let timer:number;
+
+let speedDivisor:number;
 
 window.onload = function init() :void {
     // Get the canvas element
@@ -34,7 +41,7 @@ window.onload = function init() :void {
 
     // Get the other HTML elements
     button = document.getElementById("reset") as HTMLButtonElement;
-    button.addEventListener("click", buttonPressListener);
+    button.addEventListener("click", reset);
 
     feedback = document.getElementById("feedback") as HTMLDivElement;
 
@@ -45,13 +52,17 @@ window.onload = function init() :void {
     // Add initial data to the target array
     initTargets();
     targetsRemaining = targets.length;
+    // buffer targets
+    buffer();
 
-    // Make and buffer targets
-    makeAndBufferTargets();
+    // set up timer
+    timer = window.setInterval(update, 16)
+    moving = true;
+    speedDivisor = 75;
 
     // Add listeners
-    canvas.addEventListener("click", clickListener);
-    window.addEventListener("keydown", keyPressListener);
+    canvas.addEventListener("click", handleClick);
+    window.addEventListener("keydown", handleKeydown);
 
     // set up viewport
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -63,7 +74,7 @@ window.onload = function init() :void {
     requestAnimationFrame(render);
 }
 
-function clickListener(event:MouseEvent){
+function handleClick(event:MouseEvent){
     // convert -1 to 1 space instead of 0 to w and 0 to h space.
     let rect:ClientRect = canvas.getBoundingClientRect(); // note canvas has padding pixels
     let canvasY:number = event.clientY - rect.top; // subtract off any "top" padding pixels
@@ -91,17 +102,23 @@ function clickListener(event:MouseEvent){
     })
 
     // draw updated targets
-    makeAndBufferTargets();
+    update();
     requestAnimationFrame(render);
 }
 
-function keyPressListener(event:KeyboardEvent){
+function handleKeydown(event:KeyboardEvent){
     if(event.key == "m"){ // m is used to toggle movement
-        // TODO after animation lecture
+        if(moving){
+            window.clearInterval(timer);
+            moving = false;
+        } else {
+            timer = window.setInterval(update, 16);
+            moving = true;
+        }
     }
 }
 
-function buttonPressListener(){
+function reset(){
     // reset the targets
     initTargets();
 
@@ -110,11 +127,12 @@ function buttonPressListener(){
     feedback.innerText = targetsRemaining + " targets remaining."
 
     // draw updated targets
-    makeAndBufferTargets();
+    update();
     requestAnimationFrame(render);
 }
 
-function makeAndBufferTargets(){
+
+function update() {
     // buffer setup
     bufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
@@ -123,6 +141,15 @@ function makeAndBufferTargets(){
     let allTargets:vec4[] = [];
     targets.forEach((t:target) => {
         if(t.active){
+            if(t.x + t.size >= 1 || t.x - t.size <= -1){
+                t.xDirection *= -1;
+            }
+            if(t.y + t.size >= 1 || t.y - t.size <= -1){
+                t.yDirection *= -1
+            }
+            t.x += t.xDirection;
+            t.y += t.yDirection;
+
             for(let i = 0; i < trisPerTarget; i++) {
                 // First unit circle coordinate
                 let xa = t.size * Math.cos(Math.PI * i / (trisPerTarget / 2));
@@ -152,7 +179,11 @@ function makeAndBufferTargets(){
 
     // add the shape data to the buffer
     gl.bufferData(gl.ARRAY_BUFFER, flatten(allTargets), gl.STATIC_DRAW);
+    buffer();
+    requestAnimationFrame(render);
+}
 
+function buffer(){
     //      Position       |          Color
     //  x   y   z     w    |    r     g     b     a
     // 0-3 4-7 8-11 12-15  |  16-19 20-23 24-27 28-31
@@ -187,12 +218,14 @@ function initTargets(): void{
     targets = []
 
     // Draw 6 targets
-    for(let i = 0; i < 6; i++){
+    for(let i = 0; i < 8; i++){
         targets.push({
             active: true,
             x: Math.random()*1.8 - 0.9,
             y: Math.random()*1.8 - 0.9,
-            size: 0.1
+            size: 0.1,
+            xDirection: (Math.random() - 0.5)/50,
+            yDirection: (Math.random() - 0.5)/50,
         });
     }
 }
