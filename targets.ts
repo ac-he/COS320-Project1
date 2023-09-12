@@ -130,19 +130,42 @@ function makeAndBufferTargets(){
                 // Second unit circle coordinate
                 let xb = t.size * Math.cos(Math.PI * (i + 1) / (trisPerTarget / 2));
                 let yb = t.size * Math.sin(Math.PI * (i + 1) / (trisPerTarget / 2));
+
+                // Find the color of this "slice"
+                let curColor:vec4;
+                if(i % 2 == 0){
+                    curColor = new vec4(0.98, 0.92, 0.84, 1);
+                } else {
+                    curColor = new vec4(1, 0.68, 0, 1);
+                }
+
                 // Add the points, adjusted to the specified center
                 allTargets.push(new vec4(t.x + xa, t.y + ya, 0, 1));
+                allTargets.push(curColor);
                 allTargets.push(new vec4(t.x + xb, t.y + yb, 0, 1));
+                allTargets.push(curColor);
                 allTargets.push(new vec4(t.x, t.y, 0, 1));
+                allTargets.push(curColor);
             }
         }
     })
 
     // add the shape data to the buffer
     gl.bufferData(gl.ARRAY_BUFFER, flatten(allTargets), gl.STATIC_DRAW);
+
+    //      Position       |          Color
+    //  x   y   z     w    |    r     g     b     a
+    // 0-3 4-7 8-11 12-15  |  16-19 20-23 24-27 28-31
+
+    // Position data
     let vPosition:GLint = gl.getAttribLocation(program, "vPosition");
-    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 32, 0);
     gl.enableVertexAttribArray(vPosition);
+
+    // Color data
+    let vColor:GLint = gl.getAttribLocation(program, "vColor");
+    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 32, 16);
+    gl.enableVertexAttribArray(vColor);
 }
 
 function render() : void {
