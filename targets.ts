@@ -74,6 +74,7 @@ window.onload = function init() :void {
     initTargets();
     targetsRemaining = targets.length;
     // buffer targets
+    update();
     buffer();
 
     // set up timer and start movement
@@ -100,7 +101,9 @@ window.onload = function init() :void {
 }
 
 function handleClick(event:MouseEvent){
-    clicks += 1;
+    if(targetsRemaining > 0){
+        clicks += 1;
+    }
 
     // convert -1 to 1 space instead of 0 to w and 0 to h space.
     let rect:ClientRect = canvas.getBoundingClientRect(); // note canvas has padding pixels
@@ -198,8 +201,8 @@ function update() {
 
     // increase spin counter
     if(moving){
-        spinOffset+= Math.PI / 25;
-        if(spinOffset >= Math.PI * 2){
+        spinOffset+= 5 * Math.PI / speedDivisor;
+        if(spinOffset >= 20){
             spinOffset = 0;
         }
     }
